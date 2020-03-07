@@ -1,6 +1,6 @@
 **/src/*/resources/application-local.yaml
 **/src/*/resources/flyway-local.properties
-
+*.xlsx
 /target/
 
 ### STS ###
