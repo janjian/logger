@@ -9,7 +9,6 @@ import java.util.ArrayList;
 public class Pool {
     public ArrayList<Group> pools = new ArrayList<>();
     public ArrayList<Group> pooll = new ArrayList<>();
-    public Gender gender;
     public MTime time;
 
     public Pool(MTime time) {
@@ -21,6 +20,14 @@ public class Pool {
             return pooll;
         }else{
             return pools;
+        }
+    }
+
+    public Gender getGender(){
+        if(pools.size() > 0){
+           return pools.get(0).getGender();
+        }else {
+            return pooll.size() > 0 ? pooll.get(0).getGender() : Gender.NONE;
         }
     }
 }

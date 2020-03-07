@@ -11,7 +11,9 @@ import java.util.Timer;
 
 public class PlayGround {
     private Round[] rounds = new Round[14];
+    private GroupList groupList;
     public PlayGround(GroupList groupList){
+        this.groupList = groupList;
         for(int i = 0; i< 14; i++){
             rounds[i] = new Round(MTime.values()[i]);
         }
@@ -229,5 +231,12 @@ public class PlayGround {
         return Math.pow(d, 2);
     }
 
+    public Round[] getRounds() {
+        return rounds;
+    }
+
+    public GroupList getGroupList() {
+        return groupList;
+    }
 }
 

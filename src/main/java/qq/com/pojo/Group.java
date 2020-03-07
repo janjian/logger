@@ -18,6 +18,7 @@ public class Group {
     private boolean isAppend = false;
     private MTime poolTime = null;
     private MTime groundTime = null;
+    private int no = -1;
 
     public int add(Person person){
         if(gender == Gender.NONE){
@@ -92,6 +93,7 @@ public class Group {
         group.isAppend = isAppend;
         group.poolTime = poolTime;
         group.groundTime = groundTime;
+        group.no = no;
         return group;
     }
 
@@ -103,5 +105,26 @@ public class Group {
                 ", poolTime=" + poolTime +
                 ", groundTime=" + groundTime +
                 '}';
+    }
+
+    public boolean hasPerson(Person person)
+    {
+        return people.contains(person);
+    }
+
+    public ArrayList<Person> getPeople() {
+        return people;
+    }
+
+    public String getItemsString(){
+        return Arrays.toString(items.toArray());
+    }
+
+    public int getNo() {
+        return no;
+    }
+
+    public void setNo(int no) {
+        this.no = no;
     }
 }

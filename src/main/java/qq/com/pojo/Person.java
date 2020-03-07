@@ -8,6 +8,9 @@ import qq.com.proj.Gender;
 import qq.com.proj.Item;
 import qq.com.proj.Tn;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 
 public class Person {
     // 考生报名号	姓名	性别	第一类项目	第二类项目	第三类项目	第四类项目	特殊
@@ -89,4 +92,26 @@ public class Person {
         return res;
     }
 
+    public String getAppend() {
+        return append;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Person person = (Person) o;
+        return no == person.no &&
+                name.equals(person.name) &&
+                gender == person.gender &&
+                Arrays.equals(items, person.items) &&
+                Objects.equals(append, person.append);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(no, name, gender, append);
+        result = 31 * result + Arrays.hashCode(items);
+        return result;
+    }
 }

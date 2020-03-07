@@ -2,6 +2,7 @@ package qq.com;
 
 import qq.com.pojo.Handle;
 import qq.com.pojo.Person;
+import qq.com.pojo.Plan;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,7 +47,8 @@ public class ExcelReader {
         ArrayList<Person> people =  excelOpt.toPersons();
         Collections.shuffle(people);
         System.out.println("处理了"+people.size()+"条数据");
-        Handle.calc(people);
+        Plan plan = Handle.calc(people);
+        excelOpt.write(plan);
     }
 
 
@@ -57,6 +59,7 @@ public class ExcelReader {
             String filePath = new File("").getAbsolutePath();
             File path = new File(filePath);
             for(File file : Objects.requireNonNull(path.listFiles())){
+                if(file.getName().indexOf(".输出.") > 0)continue;
                 try {
                     excelOpt = new ExcelOpt(file.getAbsolutePath());
                     System.out.println("读取到第一个excel《"+file.getName()+"》开始处理");

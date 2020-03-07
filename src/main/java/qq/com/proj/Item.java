@@ -51,12 +51,6 @@ public enum Item {
 
     @Override
     public String toString() {
-        return "Item{" +
-                "num=" + num +
-                ", name='" + name + '\'' +
-                ", tn=" + tn +
-                ", base=" + base +
-                ", gender=" + gender +
-                '}';
+        return name;
     }
 }

@@ -18,6 +18,7 @@ public class Plan {
 
 
     public Plan(List<Person> people, GroupList groupList) throws InterruptedException {
+        groupList.makeNo();
         playPool = new PlayPool(people, groupList);
         int maxi = 5000;
         ConsoleProgressBar cpb = new ConsoleProgressBar(0, maxi, 44, "优化陆地项目批次");
@@ -48,7 +49,11 @@ public class Plan {
         int t = groupList.groups.size();
     }
 
-    public void out(ExcelOpt excelOpt){
-        excelOpt
+    public PlayPool getPlayPool() {
+        return playPool;
+    }
+
+    public PlayGround getPlayGround() {
+        return playGround;
     }
 }

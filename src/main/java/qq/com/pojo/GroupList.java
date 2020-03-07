@@ -32,4 +32,18 @@ public class GroupList{
         groupList.rest.addAll(rest);
         return groupList;
     }
+
+    public ArrayList<Group> getGroups() {
+        return groups;
+    }
+
+    public ArrayList<Person> getRest() {
+        return rest;
+    }
+
+    public void makeNo(){
+        for(int i = 0; i < groups.size(); i++){
+            groups.get(i).setNo(i+1);
+        }
+    }
 }
