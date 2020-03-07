@@ -11,34 +11,9 @@ import java.util.Objects;
 
 public class ExcelReader {
 
-    public static String workDir = "/Users/ludesong/workspace/chongqi/4";
+    public static final int RE_GROUP_COUNT = 20000;
+    public static final int RE_GROUND_COUNT = 20000;
     public static void main(String[] args) throws Exception {
-
-//        System.out.println(Item.valueOf("i1000米跑"));
-//        ExcelOpt excelOpt = getOptFile(null);
-//        excelOpt.toPersons();
-        // 按指定模式在字符串查找
-//        String line = "Thi#{ed} for QT3000! OK?";
-//        String pattern = "#\\{(\\D+)\\}";
-//
-//        // 创建 Pattern 对象
-//        Pattern r = Pattern.compile(pattern);
-//
-//        // 现在创建 matcher 对象
-//        Matcher m = r.matcher(line);
-//        if (m.find( )) {
-//            System.out.println("Found value: " + m.groupCount() );
-//            System.out.println("Found value: " + m.group(0) );
-//            System.out.println("Found value: " + m.group(1) );
-//            System.out.println("Found value: " + m.start() );
-//            System.out.println("Found value: " + m.end() );
-//            StringBuilder sb = new StringBuilder();
-//            sb.append(line, m.end(), line.length());
-//            System.out.println(sb);
-//        } else {
-//            System.out.println("NO MATCH");
-//        }
-
         run(args);
     }
 

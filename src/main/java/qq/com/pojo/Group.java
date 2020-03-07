@@ -7,6 +7,7 @@ import qq.com.proj.MTime;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 
 public class Group {
@@ -116,8 +117,16 @@ public class Group {
         return people;
     }
 
+    public ArrayList<Item> getItems(){
+        ArrayList<Item> is = new ArrayList<>(items);
+        is.sort(Comparator.comparingInt(o -> o.tn.ordinal()));
+        return is;
+    }
+
     public String getItemsString(){
-        return Arrays.toString(items.toArray());
+        ArrayList<Item> is = new ArrayList<>(items);
+        is.sort(Comparator.comparingInt(o -> o.tn.ordinal()));
+        return Arrays.toString(is.toArray());
     }
 
     public int getNo() {

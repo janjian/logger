@@ -1,16 +1,19 @@
 package qq.com;
 
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.util.ArrayUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import qq.com.pojo.*;
 import qq.com.proj.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -108,7 +111,7 @@ public class ExcelOpt {
             name = excelPath.substring(0, split) + ".输出." + (i++) + excelPath.substring(split);
             file = new File(name);
             if(file.exists())continue;
-        }while (file.createNewFile());
+        }while (!file.createNewFile());
         // 创建工作文档对象
         OutputStream out = new FileOutputStream(name);
         System.out.println("准备生成结果文件:"+name);
@@ -129,7 +132,53 @@ public class ExcelOpt {
         outGorup(workbook, plan);
         outLand(workbook, plan);
         outWater(workbook, plan);
+        outGreat(workbook, plan);
         return workbook;
+    }
+
+    private void outGreat(Workbook workbook, Plan plan){
+        for(Group group : plan.getPlayGround().getGroupList().getGroups()){
+            Sheet sheet = workbook.createSheet("第"+group.getNo()+"组");
+            int start = 0;
+            int row = 0;
+            Row title = getRow(sheet, row++);
+            int call;
+            title.createCell(0, CellType.STRING).setCellValue("第"+group.getNo()+"组, 分组性别："+group.getGender());
+            MTime mTime = group.getGroundTime();
+            if(mTime != null){
+                title = getRow(sheet, row++);
+                title.createCell(0, CellType.STRING).setCellValue("陆地项目批次："+ mTime.des);
+            }
+            mTime = group.getPoolTime();
+            if(mTime != null){
+                title = getRow(sheet, row++);
+                title.createCell(0, CellType.STRING).setCellValue("水上项目批次："+ mTime.des);
+            }
+            title = getRow(sheet, row++);
+            title.createCell(0, CellType.STRING).setCellValue("本组涉及项目："+group.getItemsString());
+            title = getRow(sheet, row++);
+            call = start;
+            title.createCell(call++, CellType.STRING).setCellValue("序号");
+            title.createCell(call++, CellType.STRING).setCellValue("考生报名号");
+            title.createCell(call++, CellType.STRING).setCellValue("姓名");
+            title.createCell(call++, CellType.STRING).setCellValue("备注");
+            ArrayList<Item> items = group.getItems();
+            for(Item item : items){
+                title.createCell(call++, CellType.STRING).setCellValue(item.name);
+            }
+            for(int i = 0; i < group.getPeople().size(); i++){
+                call = start;
+                Row sheetRow = getRow(sheet, row++);
+                sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(i+1);
+                sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(group.getPeople().get(i).getNo());
+                sheetRow.createCell(call++, CellType.STRING).setCellValue(group.getPeople().get(i).getName());
+                sheetRow.createCell(call++, CellType.STRING).setCellValue(group.getPeople().get(i).getAppend());
+                for(Item item : items){
+                    boolean has = group.getPeople().get(i).getItems()[item.tn.ordinal()] == item;
+                    sheetRow.createCell(call++, CellType.STRING).setCellValue(has ? "" : "--------");
+                }
+            }
+        }
     }
 
     private void outWater(Workbook workbook, Plan plan){
@@ -245,8 +294,9 @@ public class ExcelOpt {
 
         int last = call;
         ArrayList<Group> groups = plan.getPlayGround().getGroupList().getGroups();
+        groups.sort(Comparator.comparingInt(Group::getNo));
         for (Group group : groups) {
-            last = outGroup(sheet, group, last + 1);
+            last = outGroup(sheet, group, last + 2);
         }
     }
 
@@ -260,24 +310,24 @@ public class ExcelOpt {
 
     private int outGroup(Sheet sheet, Group group, int start){
         int row = 0;
-        Row title = sheet.getRow(row++);
+        Row title = getRow(sheet, row++);
         int call;
-        call = start + 1;
+        call = start;
         title.createCell(call++, CellType.STRING).setCellValue("第"+group.getNo()+"组, 分组性别："+group.getGender());
         MTime mTime = group.getGroundTime();
         if(mTime != null){
-            title = sheet.getRow(row++);
-            call = start + 1;
+            title = getRow(sheet, row++);
+            call = start;
             title.createCell(call++, CellType.STRING).setCellValue("陆地项目批次："+ mTime.des);
         }
         mTime = group.getPoolTime();
         if(mTime != null){
-            title = sheet.getRow(row++);
-            call = start + 1;
+            title = getRow(sheet, row++);
+            call = start;
             title.createCell(call++, CellType.STRING).setCellValue("水上项目批次："+ mTime.des);
         }
-        title = sheet.getRow(row++);
-        call = start + 1;
+        title = getRow(sheet, row++);
+        call = start;
         title.createCell(call++, CellType.STRING).setCellValue("本组涉及项目："+group.getItemsString());
         title = getRow(sheet, row++);
         call = start;

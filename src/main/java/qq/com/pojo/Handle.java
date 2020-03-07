@@ -1,6 +1,7 @@
 package qq.com.pojo;
 
 import qq.com.ConsoleProgressBar;
+import qq.com.ExcelReader;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -53,7 +54,7 @@ public class Handle {
 
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
         ConcurrentLinkedQueue<GroupList> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
-        int maxi = 100;
+        int maxi = ExcelReader.RE_GROUP_COUNT / 50;
         ConsoleProgressBar cpb = new ConsoleProgressBar(0, maxi, 44, "优化落单学生组队");
         for(int i3 = 0; i3 < maxi; i3++){
             int count = 50;

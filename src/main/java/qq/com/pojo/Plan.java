@@ -2,6 +2,7 @@ package qq.com.pojo;
 
 import qq.com.ConsoleProgressBar;
 import qq.com.ExcelOpt;
+import qq.com.ExcelReader;
 import qq.com.NotAble;
 
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class Plan {
     public Plan(List<Person> people, GroupList groupList) throws InterruptedException {
         groupList.makeNo();
         playPool = new PlayPool(people, groupList);
-        int maxi = 5000;
+        int maxi = ExcelReader.RE_GROUND_COUNT;
         ConsoleProgressBar cpb = new ConsoleProgressBar(0, maxi, 44, "优化陆地项目批次");
         List<NotAble> notAbles = new ArrayList<>();
         for (int i = 0; i < maxi; i++) {
@@ -45,7 +46,7 @@ public class Plan {
         }
         assert src != Integer.MIN_VALUE;
         cpb.show(maxi);
-//        playGround.mark(true);
+        playGround.mark(true);
         int t = groupList.groups.size();
     }
 

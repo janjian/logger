@@ -81,16 +81,16 @@ public class PlayPool {
         if(rate < 0.25){
             addList(pools[MTime.FIRST_UP.i()], water[Gender.男.ordinal()], 0, 1);
 
-            double sum = 3+4+4;
+            double sum = 9;
             addList(pools[MTime.SENCOND_UP.i()], water[Gender.女.ordinal()], 0, 3/sum);
-            addList(pools[MTime.FIRST_DOWN.i()], water[Gender.女.ordinal()], 3/sum, 7/sum);
-            addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.女.ordinal()], 7/sum, 1);
+            addList(pools[MTime.FIRST_DOWN.i()], water[Gender.女.ordinal()], 3/sum, 6/sum);
+            addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.女.ordinal()], 6/sum, 1);
 
             System.out.println("使用方案1：第一天上午男生用泳池，其他时间女生用泳池。");
         }else if(rate < 0.357142857){
             addList(pools[MTime.FIRST_DOWN.i()], water[Gender.男.ordinal()], 0, 1);
 
-            double sum = 3+3+4;
+            double sum = 9;
             addList(pools[MTime.FIRST_UP.i()], water[Gender.女.ordinal()], 0, 3/sum);
             addList(pools[MTime.SENCOND_UP.i()], water[Gender.女.ordinal()], 3/sum, 6/sum);
             addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.女.ordinal()], 6/sum, 1);
@@ -105,18 +105,18 @@ public class PlayPool {
             System.out.println("使用方案3：上午男生用泳池，下午女生用泳池。");
         }else if(rate < 0.535714286){
             if(Math.random() > 0.5){
-                addList(pools[MTime.FIRST_UP.i()], water[Gender.男.ordinal()], 0, 3.0/7);
-                addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.男.ordinal()], 3.0/7, 1);
+                addList(pools[MTime.FIRST_UP.i()], water[Gender.男.ordinal()], 0, 0.5);
+                addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.男.ordinal()], 0.5, 1);
 
-                addList(pools[MTime.SENCOND_UP.i()], water[Gender.女.ordinal()], 0, 3.0/7);
-                addList(pools[MTime.FIRST_DOWN.i()], water[Gender.女.ordinal()], 3.0/7, 1);
+                addList(pools[MTime.SENCOND_UP.i()], water[Gender.女.ordinal()], 0, 0.5);
+                addList(pools[MTime.FIRST_DOWN.i()], water[Gender.女.ordinal()], 0.5, 1);
                 System.out.println("使用方案4(错开版)：第一天上午和第二天下午男生用泳池，第二天上午和第一天下午女生用泳池。");
             }else{
-                addList(pools[MTime.FIRST_UP.i()], water[Gender.男.ordinal()], 0, 3.0/7);
-                addList(pools[MTime.FIRST_DOWN.i()], water[Gender.男.ordinal()], 3.0/7, 1);
+                addList(pools[MTime.FIRST_UP.i()], water[Gender.男.ordinal()], 0, 0.5);
+                addList(pools[MTime.FIRST_DOWN.i()], water[Gender.男.ordinal()], 0.5, 1);
 
-                addList(pools[MTime.SENCOND_UP.i()], water[Gender.女.ordinal()], 0, 3.0/7);
-                addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.女.ordinal()], 3.0/7, 1);
+                addList(pools[MTime.SENCOND_UP.i()], water[Gender.女.ordinal()], 0, 0.5);
+                addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.女.ordinal()], 0.5, 1);
                 System.out.println("使用方案4(连续版)：第一天男生用泳池，第二天女生用泳池。");
             }
         }else if(rate < 0.642857143) {
@@ -129,7 +129,7 @@ public class PlayPool {
         }else if(rate < 0.75) {
             addList(pools[MTime.FIRST_DOWN.i()], water[Gender.女.ordinal()], 0, 1);
 
-            double sum = 3+3+4;
+            double sum = 9;
             addList(pools[MTime.FIRST_UP.i()], water[Gender.男.ordinal()], 0, 3/sum);
             addList(pools[MTime.SENCOND_UP.i()], water[Gender.男.ordinal()], 3/sum, 6/sum);
             addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.男.ordinal()], 6/sum, 1);
@@ -138,10 +138,10 @@ public class PlayPool {
         }else {
             addList(pools[MTime.FIRST_UP.i()], water[Gender.女.ordinal()], 0, 1);
 
-            double sum = 3+4+4;
+            double sum = 9;
             addList(pools[MTime.SENCOND_UP.i()], water[Gender.男.ordinal()], 0, 3/sum);
-            addList(pools[MTime.FIRST_DOWN.i()], water[Gender.男.ordinal()], 3/sum, 7/sum);
-            addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.男.ordinal()], 7/sum, 1);
+            addList(pools[MTime.FIRST_DOWN.i()], water[Gender.男.ordinal()], 3/sum, 6/sum);
+            addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.男.ordinal()], 6/sum, 1);
             System.out.println("使用方案7：第一天上午女生用泳池，其他时间男生用泳池。");
         }
     }
@@ -333,25 +333,23 @@ public class PlayPool {
      */
 
     private static void addList(Pool playRound, ArrayList<Group>[] people, double peoplel, double peoples){
-        int startd = (int) (peoplel * people[Base.D.i()].size());
-        int starts = (int) (peoplel * people[Base.S.i()].size());
-        int startl = (int) (peoplel * people[Base.L.i()].size());
-        int endd = (int) (peoples * people[Base.D.i()].size());
-        int ends = (int) (peoples * people[Base.S.i()].size());
-        int endl = (int) (peoples * people[Base.L.i()].size());
+        int startd = (int) Math.ceil(peoplel * people[Base.D.i()].size());
+        int starts = (int) Math.ceil(peoplel * people[Base.S.i()].size());
+        int startl = (int) Math.ceil(peoplel * people[Base.L.i()].size());
+        int endd = (int) Math.ceil(peoples * people[Base.D.i()].size());
+        int ends = (int) Math.ceil(peoples * people[Base.S.i()].size());
+        int endl = (int) Math.ceil(peoples * people[Base.L.i()].size());
         addListS(playRound,
                 people[Base.D.i()].subList(startd, endd),
                 people[Base.S.i()].subList(starts, ends),
-                people[Base.L.i()].subList(startl, endl),
                 Tn.T2);
         addListS(playRound,
                 people[Base.D.i()].subList(startd, endd),
-                people[Base.S.i()].subList(starts, ends),
                 people[Base.L.i()].subList(startl, endl),
                 Tn.T1);
     }
 
-    private static void addListS(Pool pool, List<Group> people, List<Group> peoples, List<Group> peoplel, Tn tn){
+    private static void addListS(Pool pool, List<Group> people, List<Group> peoples, Tn tn){
         Iterator<Group> pb = people.iterator();
         Group pbi = null;
         boolean hasGap = false;
