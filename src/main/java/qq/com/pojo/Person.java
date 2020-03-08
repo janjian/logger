@@ -3,6 +3,7 @@ package qq.com.pojo;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.springframework.util.StringUtils;
 import qq.com.proj.Base;
 import qq.com.proj.Gender;
 import qq.com.proj.Item;
@@ -19,15 +20,19 @@ public class Person {
     Gender gender;
     Item[] items = new Item[4];
     String append = null;
+    private String school;
 
     public static Person parsePerson(Row row){
         Person person = new Person();
         int i = row.getFirstCellNum();
         Cell no = row.getCell(i++);
-        person.no = Long.parseLong(no.getCellTypeEnum() == CellType.NUMERIC
+        String nostr = no.getCellTypeEnum() == CellType.NUMERIC
                 ? ((long) no.getNumericCellValue()) + ""
-                : no.getStringCellValue());
+                : no.getStringCellValue();
+        if(StringUtils.isEmpty(nostr))return null;
+        person.no = Long.parseLong(nostr);
         person.name = row.getCell(i++).getStringCellValue();
+        person.school = row.getCell(i++).getStringCellValue();
         person.gender = Gender.valueOf(row.getCell(i++).getStringCellValue());
         person.items[0] = Item.valueOf("i"+row.getCell(i++).getStringCellValue());
         person.items[1] = Item.valueOf("i"+row.getCell(i++).getStringCellValue());
@@ -113,5 +118,13 @@ public class Person {
         int result = Objects.hash(no, name, gender, append);
         result = 31 * result + Arrays.hashCode(items);
         return result;
+    }
+
+    public String getSchool() {
+        return school;
+    }
+
+    public void setSchool(String school) {
+        this.school = school;
     }
 }

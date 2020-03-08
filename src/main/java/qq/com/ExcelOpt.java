@@ -1,12 +1,10 @@
 package qq.com;
 
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.util.ArrayUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import qq.com.pojo.*;
 import qq.com.proj.*;
@@ -14,8 +12,8 @@ import qq.com.proj.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**使用例子
  * ReadExcel excel = new ReadExcel("D:\\myexcel.xlsx");
@@ -86,7 +84,15 @@ public class ExcelOpt {
                 break;
             }
             try{
-                res.add(Person.parsePerson(row));
+                Person person = Person.parsePerson(row);
+                if(person == null){
+                    if(out){
+                        System.out.println();
+                        System.out.println("第"+i+"行数据不完整，提前读取结束");
+                    }
+                    break;
+                }
+                res.add(person);
             }catch (Exception e){
                 if(out){
                     System.out.println();
@@ -188,39 +194,56 @@ public class ExcelOpt {
             Row sheetRow = getRow(sheet, row++);
             sheetRow.createCell(0, CellType.STRING).setCellValue(pool.time.des+"("+pool.getGender()+")");
             int call = 0;
-            int i = 0;
-            int srow = row;
+            int arow = row;
+            AtomicInteger rowa;
             for(Tn tn : new Tn[]{Tn.T2, Tn.T1}){
-                int temp = call;
-                call = temp;
-                row = srow;
-                sheetRow = getRow(sheet, row++);
-                if(tn == Item.i25米游泳.tn){
-                    sheetRow.createCell(call++, CellType.STRING).setCellValue(Item.i25米游泳.name);
-                }else{
-                    sheetRow.createCell(call++, CellType.STRING).setCellValue(Item.i200米游泳.name);
-                }
-                sheetRow = getRow(sheet, row++);
-                sheetRow.createCell(call++, CellType.STRING).setCellValue("序号");
-                sheetRow.createCell(call++, CellType.STRING).setCellValue("分组号");
-                sheetRow.createCell(call++, CellType.STRING).setCellValue("考生报名号");
-                sheetRow.createCell(call++, CellType.STRING).setCellValue("姓名");
-                sheetRow.createCell(call++, CellType.STRING).setCellValue("备注");
-                for(Group group : pool.getPool(tn)){
-                    for(Person person : group.getPeople()){
-                        if(person.getItems()[tn.ordinal()].base == Base.LAND)continue;
-                        call = temp;
-                        sheetRow = getRow(sheet, row++);
-                        sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(i++);
-                        sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(group.getNo());
-                        sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(person.getNo());
-                        sheetRow.createCell(call++, CellType.STRING).setCellValue(person.getName());
-                        sheetRow.createCell(call++, CellType.STRING).setCellValue(person.getAppend());
-                        call++;
-                    }
+                rowa = new AtomicInteger(row);
+                call = outWater(sheet, call+1, rowa, tn, pool, true);
+                arow = Math.max(rowa.get(), arow);
+                rowa = new AtomicInteger(row);
+                call = outWater(sheet, call+1, rowa, tn, pool, false);
+                arow = Math.max(rowa.get(), arow);
+            }
+            row = arow;
+        }
+    }
+
+    private int outWater(Sheet sheet, int call, AtomicInteger row, Tn tn, Pool pool, boolean doubleit){
+        int temp = call;
+        int i = 0;
+        call = temp;
+        Row sheetRow = getRow(sheet, row.getAndIncrement());
+        String apped = doubleit?"(兼游)":"(单游)";
+        if(tn == Item.i25米游泳.tn){
+            sheetRow.createCell(call++, CellType.STRING).setCellValue(Item.i25米游泳.name+apped);
+        }else{
+            sheetRow.createCell(call++, CellType.STRING).setCellValue(Item.i200米游泳.name+apped);
+        }
+        sheetRow = getRow(sheet, row.getAndIncrement());
+        call = temp;
+        sheetRow.createCell(call++, CellType.STRING).setCellValue("序号");
+        sheetRow.createCell(call++, CellType.STRING).setCellValue("分组号");
+        sheetRow.createCell(call++, CellType.STRING).setCellValue("考生报名号");
+        sheetRow.createCell(call++, CellType.STRING).setCellValue("姓名");
+        sheetRow.createCell(call++, CellType.STRING).setCellValue("备注");
+        for(Group group : pool.getPool(tn)){
+            for(Person person : group.getPeople()){
+                if(person.getItems()[tn.ordinal()].base == Base.LAND)continue;
+                boolean itdoube = person.getItems()[0].base == Base.WATERS
+                        && person.getItems()[1].base == Base.WATERS;
+                if(itdoube == doubleit){
+                    call = temp;
+                    sheetRow = getRow(sheet, row.getAndIncrement());
+                    sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(i++);
+                    sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(group.getNo());
+                    sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(person.getNo());
+                    sheetRow.createCell(call++, CellType.STRING).setCellValue(person.getName());
+                    sheetRow.createCell(call++, CellType.STRING).setCellValue(person.getAppend());
+                    call++;
                 }
             }
         }
+        return call;
     }
 
     private void outLand(Workbook workbook, Plan plan){
@@ -359,6 +382,7 @@ public class ExcelOpt {
         int call = 0;
         title.createCell(call++, CellType.STRING).setCellValue("考生报名号");
         title.createCell(call++, CellType.STRING).setCellValue("姓名");
+        title.createCell(call++, CellType.STRING).setCellValue("学校");
         title.createCell(call++, CellType.STRING).setCellValue("性别");
         title.createCell(call++, CellType.STRING).setCellValue("第一类项目");
         title.createCell(call++, CellType.STRING).setCellValue("第二类项目");
@@ -377,6 +401,7 @@ public class ExcelOpt {
             call = 0;
             sheetRow.createCell(call++, CellType.NUMERIC).setCellValue(p.getNo());
             sheetRow.createCell(call++, CellType.STRING).setCellValue(p.getName());
+            sheetRow.createCell(call++, CellType.STRING).setCellValue(p.getSchool());
             sheetRow.createCell(call++, CellType.STRING).setCellValue(p.getGender().name());
             sheetRow.createCell(call++, CellType.STRING).setCellValue(p.getItems()[Tn.T1.ordinal()].name);
             sheetRow.createCell(call++, CellType.STRING).setCellValue(p.getItems()[Tn.T2.ordinal()].name);
