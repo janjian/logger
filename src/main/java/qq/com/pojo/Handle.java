@@ -54,26 +54,38 @@ public class Handle {
 
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
         ConcurrentLinkedQueue<GroupList> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
-        int maxi = ExcelReader.RE_GROUP_COUNT / 50;
+        int count = 50;
+        int maxi = ExcelReader.RE_GROUP_COUNT / count;
         ConsoleProgressBar cpb = new ConsoleProgressBar(0, maxi, 44, "优化落单学生组队");
         for(int i3 = 0; i3 < maxi; i3++){
-            int count = 50;
             CountDownLatch latch = new CountDownLatch(count);
             cpb.show(0);
             for(int i = 0; i < count; i++){
                 cachedThreadPool.execute(() -> {
                     LinkedHashMap<String, ArrayList<Person>> c = copy(cal);
-                    GroupList groupList1 = chou(c, new GroupList());
-                    concurrentLinkedQueue.add(groupList1);
+                    GroupList groupList2 = chou(c, new GroupList());
+
+                    GroupList mini = concurrentLinkedQueue.poll();
+                    if (mini == null) {
+                        mini = groupList2;
+                    } else {
+                        if (mini.rest.size() > groupList2.rest.size()) {
+                            mini = groupList2;
+//                    System.out.println("分组共"+mini.groups.size()+"队, 剩余"+mini.rest.size()+"无法分组");
+                        } else if (mini.rest.size() == groupList2.rest.size()
+                                && mini.groups.size() > groupList2.groups.size()) {
+                            mini = groupList2;
+//                    System.out.println("分组共"+mini.groups.size()+"队, 剩余"+mini.rest.size()+"无法分组");
+                        }
+                    }
+                    concurrentLinkedQueue.add(mini);
                     latch.countDown();
                 });
             }
             latch.await();
             cpb.show(i3);
         }
-        cpb.show(maxi);
         GroupList mini = null;
-
         for(GroupList groupList2 : concurrentLinkedQueue){
             if(mini == null){
                 mini = groupList2;
@@ -88,6 +100,8 @@ public class Handle {
                 }
             }
         }
+        cpb.show(maxi);
+        assert mini != null;
         groupList.addAll(mini);
         System.out.println("分组共"+groupList.groups.size()+"队, 剩余"+groupList.rest.size()+"无法分组");
         return groupList;
