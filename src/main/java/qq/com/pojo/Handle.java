@@ -22,22 +22,22 @@ public class Handle {
         ConsoleProgressBar cpb1 = new ConsoleProgressBar(0, people.size(), 51, "初次组队");
         LinkedHashMap<String, ArrayList<Person>> cal = new LinkedHashMap<>();
         int i4 = 0;
+        GroupList groupList = new GroupList();
         for(Person person:people){
             cpb1.show(++i4);
-            String personKey = person.getItemsKey();
-            cal.compute(personKey, (key, value) -> {
-                if(value == null){
-                    value = new ArrayList<>();
-                }
-                if(person.append == null){
-                    value.add(0, person);
-                }else{
+            if(person.append == null){
+                String personKey = person.getItemsKey();
+                cal.compute(personKey, (key, value) -> {
+                    if(value == null){
+                        value = new ArrayList<>();
+                    }
                     value.add(person);
-                }
-                return value;
-            });
+                    return value;
+                });
+            }else{
+                groupList.getRest().add(person);
+            }
         }
-        GroupList groupList = new GroupList();
         cal.replaceAll((key, value) -> {
             Group group = new Group();
             for(Person person:value){
@@ -50,7 +50,7 @@ public class Handle {
             }
             return group.people;
         });
-        System.out.println("完美分组共"+groupList.groups.size()+"队");
+        System.out.println("完美分组共"+groupList.groups.size()+"队, 特殊情况考生共"+groupList.getRest().size()+"全部拿出来不参与筛选，放在未成功分组处");
 
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
         ConcurrentLinkedQueue<GroupList> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
