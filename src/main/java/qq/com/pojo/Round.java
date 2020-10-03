@@ -67,6 +67,16 @@ public class Round {
         }
         return res;
     }
+    public boolean add(int index, Group group) {
+        boolean res = true;
+        for(Item item : group.items){
+            if(item.base != Base.LAND){
+                continue;
+            }
+            getList(group.gender, item).add(index, group);
+        }
+        return res;
+    }
 
     public int mark() {
         int dev = 0;

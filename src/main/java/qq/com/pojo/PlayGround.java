@@ -175,7 +175,11 @@ public class PlayGround {
             }
             throw new NotAble();
         }
-        rounds[mxi].add(group);
+        if(group.gender == Gender.男){
+            rounds[mxi].add(0, group);
+        }else{
+            rounds[mxi].add(group);
+        }
         group.rmTime(rounds[mxi].time);
     }
 
