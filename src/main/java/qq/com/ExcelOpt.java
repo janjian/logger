@@ -13,6 +13,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**使用例子
@@ -411,24 +412,37 @@ public class ExcelOpt {
 
         }
         ArrayList<Group> groups = plan.getPlayGround().getGroupList().getGroups();
+        LinkedHashMap<MTime, Integer> mtimeCount = new LinkedHashMap<>();//用于统计每个批次目前有多少组了
         for(int i = 0; i < groups.size(); i++){
-            for(Person person : groups.get(i).getPeople()){
+            MTime 陆地批次 = groups.get(i).getGroundTime();
+            Integer 当前批次组编号 = mtimeCount.compute(陆地批次, (key, value) -> {
+                if (value == null) {
+                    return 1; // 第一次出现为第一组
+                }
+                return value + 1;
+            });
+            MTime 水上批次 = groups.get(i).getPoolTime();
+            for (int j = 0; j < groups.get(i).getPeople().size(); j++) {
+                Person person = groups.get(i).getPeople().get(j);
                 int callIndex = call;
                 Row sheetRow = personIntegerHashMap.get(person);
                 assert sheetRow != null;
                 sheetRow.createCell(callIndex++, CellType.NUMERIC).setCellValue(i + 1);
-                MTime mTime = groups.get(i).getGroundTime();
-                sheetRow.createCell(callIndex++, CellType.STRING).setCellValue(mTime == null ? "" : mTime.des);
-                mTime = groups.get(i).getPoolTime();
-                sheetRow.createCell(callIndex++, CellType.STRING).setCellValue(mTime == null ? "" : mTime.des);
+                if(陆地批次 == null){
+                    sheetRow.createCell(callIndex++, CellType.STRING).setCellValue("");
+                }else {
+                    String 准考证号 = String.format("%d%02d%02d", 陆地批次.准考证号前缀, 当前批次组编号, j + 1);
+                    sheetRow.createCell(callIndex++, CellType.STRING).setCellValue(准考证号);
+                }
+                sheetRow.createCell(callIndex++, CellType.STRING).setCellValue(水上批次 == null ? "" : 水上批次.des);
             }
         }
         for(Person person : plan.getPlayGround().getGroupList().getRest()){
             int callIndex = call;
             Row sheetRow = personIntegerHashMap.get(person);
-            sheetRow.createCell(callIndex++, CellType.STRING).setCellValue("无法分组");
-            sheetRow.createCell(callIndex++, CellType.STRING).setCellValue("无法分组");
-            sheetRow.createCell(callIndex++, CellType.STRING).setCellValue("无法分组");
+            sheetRow.createCell(callIndex++, CellType.STRING).setCellValue("暂无分组");
+            sheetRow.createCell(callIndex++, CellType.STRING).setCellValue("暂无分组");
+            sheetRow.createCell(callIndex++, CellType.STRING).setCellValue("暂无分组");
         }
     }
 }
