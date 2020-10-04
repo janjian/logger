@@ -11,8 +11,9 @@ import java.util.Objects;
 
 public class ExcelReader {
 
-    public static final int RE_GROUP_COUNT = 20000;
-    public static final int RE_GROUND_COUNT = 20000;
+    public static final int RE_GROUP_COUNT = 30000;
+    public static final int RE_GROUND_COUNT = 10000;
+    public static final int MINI_GROUP_SIZE = 10;
     public static void main(String[] args) throws Exception {
         run(args);
     }

@@ -57,4 +57,33 @@ public enum MTime {
         if(num - res.num < -1)return null;
         return res;
     }
+
+    public String half(){
+        switch (this){
+
+            case FIRST_UP_1:
+            case FIRST_UP_2:
+            case FIRST_UP_3:
+            case FIRST_UP:
+                return FIRST_UP.des;
+            case FIRST_DOWN_1:
+            case FIRST_DOWN_2:
+            case FIRST_DOWN_3:
+            case FIRST_DOWN_4:
+            case FIRST_DOWN:
+                return FIRST_DOWN.des;
+            case SENCOND_UP_1:
+            case SENCOND_UP_2:
+            case SENCOND_UP_3:
+            case SENCOND_UP:
+                return SENCOND_UP.des;
+            case SENCOND_DOWN_1:
+            case SENCOND_DOWN_2:
+            case SENCOND_DOWN_3:
+            case SENCOND_DOWN_4:
+            case SENCOND_DOWN:
+                return SENCOND_DOWN.des;
+        }
+        throw new UnsupportedOperationException();
+    }
 }

@@ -104,7 +104,7 @@ public class PlayPool {
             addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.女.ordinal()], 0.5, 1);
             System.out.println("使用方案3：上午男生用泳池，下午女生用泳池。");
         }else if(rate < 0.535714286){
-            if(Math.random() > 0.5){
+            if(Math.random() > 0.7){
                 addList(pools[MTime.FIRST_UP.i()], water[Gender.男.ordinal()], 0, 0.5);
                 addList(pools[MTime.SENCOND_DOWN.i()], water[Gender.男.ordinal()], 0.5, 1);
 

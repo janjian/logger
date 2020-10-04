@@ -9,6 +9,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static qq.com.ExcelReader.MINI_GROUP_SIZE;
+
 public class Handle {
     public static Plan calc(ArrayList<Person> people) throws InterruptedException {
         return makePlan(people, makeGroup(people));
@@ -50,7 +52,7 @@ public class Handle {
             }
             return group.people;
         });
-        System.out.println("完美分组共"+groupList.groups.size()+"队, 特殊情况考生共"+groupList.getRest().size()+"全部拿出来不参与筛选，放在未成功分组处");
+        System.out.println("完美分组共"+groupList.groups.size()+"队, 特殊情况考生共"+groupList.getRest().size()+"人全部拿出来不参与筛选，放在未成功分组处");
 
         ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
         ConcurrentLinkedQueue<GroupList> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
@@ -103,7 +105,7 @@ public class Handle {
         cpb.show(maxi);
         assert mini != null;
         groupList.addAll(mini);
-        System.out.println("分组共"+groupList.groups.size()+"队, 剩余"+groupList.rest.size()+"无法分组");
+        System.out.println("分组共"+groupList.groups.size()+"队, 剩余"+groupList.rest.size()+"无分组");
         return groupList;
     }
 
@@ -123,6 +125,35 @@ public class Handle {
             is.add(i);
         }
         Collections.shuffle(is);
+        int si = 5;
+        final int bound = 14 - MINI_GROUP_SIZE + 1;
+        do{
+            boolean res = false;
+            Collections.shuffle(is);
+            int g = Math.random() < 0.5 ? 2 : 3;
+            int j = 14 - (int)(Math.random()*bound); // (9, 14]
+            if(g > 2){
+                if(Math.random() > 0.5){
+                    for (int i : is) {
+                        res |= tripa(cal.entrySet(), groupList, i, g, j);
+                    }
+                }else{
+                    for (int i : is) {
+                        res |= pare(cal.entrySet(), groupList, i, g, j);
+                    }
+                }
+            }else{
+                for (int i : is) {
+                    res |= pare(cal.entrySet(), groupList, i, g, j);
+                }
+            }
+            if(res){
+                si = si < 4 ? si + 1 : 4;
+            }else{
+                si--;
+            }
+        }while (si > 0);
+
         for(int g = 3; g >= 2; g--){
             for( int j = 14; j > 12; j--){
                 for (int i : is){
@@ -150,7 +181,7 @@ public class Handle {
         return groupList;
     }
 
-    private static void pare(Set<Map.Entry<String, ArrayList<Person>>> entries, GroupList groupList, int start_p, int gap, int mini) {
+    private static boolean pare(Set<Map.Entry<String, ArrayList<Person>>> entries, GroupList groupList, int start_p, int gap, int mini) {
         Map.Entry<String, ArrayList<Person>> mark = null;
         int start = start_p + 1;
         for (Map.Entry<String, ArrayList<Person>> par : entries) {
@@ -158,7 +189,7 @@ public class Handle {
             if (start == 0){
                 mark = par;
                 if(mark == null || mark.getValue().size() == 0) {
-                    return;
+                    return false;
                 }
                 break;
             }
@@ -192,6 +223,7 @@ public class Handle {
             assert closet.getValue().size() == last;
 //            System.out.println(mark.getKey() + "类型与" + closet.getKey() + "类型凑成一对(" + t2 + ")，后者剩余" + last + "人");
             groupList.add(group);
+            return true;
         }else if(max >= mini){
             Group group = new Group();
             int t1 = group.addAll(mark.getValue());
@@ -199,10 +231,12 @@ public class Handle {
             assert t1 <= 14;
 //            System.out.println(mark.getKey() + "类型自己凑成一对(" + t1 + ")");
             groupList.add(group);
+            return true;
         }
+        return false;
     }
 
-    private static void tripa(Set<Map.Entry<String, ArrayList<Person>>> entries, GroupList groupList, int i, int gap, int mini){
+    private static boolean tripa(Set<Map.Entry<String, ArrayList<Person>>> entries, GroupList groupList, int i, int gap, int mini){
         Map.Entry<String, ArrayList<Person>> mark = null;
         ArrayList<Map.Entry<String, ArrayList<Person>>> list = new ArrayList<>();
         int start = i + 1;
@@ -211,7 +245,7 @@ public class Handle {
             if (start == 0){
                 mark = par;
                 if(mark == null || mark.getValue().size() == 0) {
-                    return;
+                    return false;
                 }
             }else{
                 if(par == null || par.getValue().size() == 0) {
@@ -257,7 +291,9 @@ public class Handle {
             assert t3 <= 14;
 //            System.out.println(mark.getKey()+"类型与"+prei.getKey()+"类型与"+prej.getKey()+"类型凑成一组("+(t3)+")，后者剩余"+prej.getValue().size()+"人");
             groupList.add(group);
+            return true;
         }
+        return false;
     }
 
     private static Map.Entry<String, ArrayList<Person>> tripb(

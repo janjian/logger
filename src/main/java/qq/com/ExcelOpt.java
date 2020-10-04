@@ -10,10 +10,7 @@ import qq.com.pojo.*;
 import qq.com.proj.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**使用例子
@@ -137,6 +134,7 @@ public class ExcelOpt {
         }
         outPeople(workbook, plan);
         outGorup(workbook, plan);
+        outSum(workbook, plan);
         outLand(workbook, plan);
         outWater(workbook, plan);
         outGreat(workbook, plan);
@@ -245,6 +243,85 @@ public class ExcelOpt {
             }
         }
         return call;
+    }
+
+    private void outSum(Workbook workbook, Plan plan) {
+        Sheet sheet = workbook.createSheet("路上项目统计");
+        int row = 0;
+        LinkedHashMap<String, Map<Item, Integer>> itemCountb = new LinkedHashMap<>();
+        LinkedHashMap<String, Map<Item, Integer>> itemCountg = new LinkedHashMap<>();
+        for (MTime mTime : MTime.values()) {
+            if (mTime.i() != mTime.ordinal()) {
+                continue;
+            }
+            Round round = plan.getPlayGround().getRounds()[mTime.ordinal()];
+            Map<Item, Integer> itemNumb = itemCountb.compute(mTime.half(),
+                    (key, value) -> value == null ? new LinkedHashMap<>() : value);
+            Map<Item, Integer> itemNumg = itemCountg.compute(mTime.half(),
+                    (key, value) -> value == null ? new LinkedHashMap<>() : value);
+            for (Item item : Item.values()) {
+                if (item.base == Base.WATERS) continue;
+                ArrayList<Group> groups = round.getList(Gender.男, item);
+                if(groups!=null){
+                    groups.forEach(group -> itemNumb.compute(item,
+                            (k, v) -> v == null ? group.getPeople().size() : v + group.getPeople().size()));
+                }
+                groups = round.getList(Gender.女, item);
+                if(groups!=null) {
+                    groups.forEach(group -> itemNumg.compute(item,
+                            (k, v) -> v == null ? group.getPeople().size() : v + group.getPeople().size()));
+                }
+            }
+        }
+
+
+        Row sheetRow = getRow(sheet, row++);
+        int call = 0;
+        sheetRow.createCell(call++, CellType.STRING).setCellValue("男生 每半天人数统计");
+
+        sheetRow = getRow(sheet, row++);
+        call = 1;
+        for (Item item : Item.values()) {
+            if (item.base == Base.WATERS || item.gender == Gender.女) continue;
+            sheetRow.createCell(call++, CellType.STRING).setCellValue(item.name);
+        }
+
+        ArrayList<String> keys = new ArrayList<>(itemCountb.keySet());
+        for(String time : keys){
+            sheetRow = getRow(sheet, row++);
+            Map<Item, Integer> theTime = itemCountb.get(time);
+            call = 0;
+            sheetRow.createCell(call++, CellType.STRING).setCellValue(time);
+            for (Item item : Item.values()) {
+                if (item.base == Base.WATERS || item.gender == Gender.女) continue;
+                sheetRow.createCell(call++, CellType.STRING).setCellValue(theTime.getOrDefault(item, 0));
+            }
+        }
+
+        sheetRow = getRow(sheet, row++);
+        sheetRow = getRow(sheet, row++);
+        call = 0;
+        sheetRow.createCell(call++, CellType.STRING).setCellValue("女生 每半天人数统计");
+
+        sheetRow = getRow(sheet, row++);
+        call = 1;
+        for (Item item : Item.values()) {
+            if (item.base == Base.WATERS || item.gender == Gender.男) continue;
+            sheetRow.createCell(call++, CellType.STRING).setCellValue(item.name);
+        }
+
+        keys = new ArrayList<>(itemCountg.keySet());
+        for(String time : keys){
+            sheetRow = getRow(sheet, row++);
+            Map<Item, Integer> theTime = itemCountg.get(time);
+            call = 0;
+            sheetRow.createCell(call++, CellType.STRING).setCellValue(time);
+            for (Item item : Item.values()) {
+                if (item.base == Base.WATERS || item.gender == Gender.男) continue;
+                sheetRow.createCell(call++, CellType.STRING).setCellValue(theTime.getOrDefault(item, 0));
+            }
+        }
+
     }
 
     private void outLand(Workbook workbook, Plan plan){
