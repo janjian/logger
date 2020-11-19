@@ -1,4 +1,4 @@
-package qq.com.proj;
+package qidian.qq.com.logger.model;
 
 public enum Base {
     LAND, WATERS, D, S, L;

@@ -1,21 +1,17 @@
-package qq.com.pojo;
+package qidian.qq.com.logger.model;
 
-import qq.com.ConsoleProgressBar;
-import qq.com.NotAble;
-import qq.com.proj.*;
+
+import qidian.qq.com.logger.utils.Setting;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Timer;
 
 public class PlayGround {
     private Round[] rounds = new Round[14];
-    private GroupList groupList;
-    public PlayGround(GroupList groupList){
-        this.groupList = groupList;
-        for(int i = 0; i< 14; i++){
-            rounds[i] = new Round(MTime.values()[i]);
+    public PlayGround(GroupList groupList, Setting setting){
+        for(int i = 1; i<= setting.getUpBatchSize(); i++){
+            rounds[i] = new Round(i);
         }
 
 //        ConsoleProgressBar cpb1 = new ConsoleProgressBar(0, groupList.groups.size()*3, 51, "编排考试");
@@ -23,17 +19,7 @@ public class PlayGround {
 
         Collections.shuffle(groupList.groups);
         for(Group group: groupList.groups){
-            if(group.isAppend()){
-                try{
-                    appGroup(group, end);
-                }catch (NotAble notAble){
-
-                }
-//                cpb1.show(++i);
-            }
-        }
-        for(Group group: groupList.groups){
-            if(group.isAppend() || group.items.contains(Item.i200米游泳)){
+            if(group.items.contains(Item.i200米游泳)){
 
                 try{
                     appGroup(group, is);
@@ -51,86 +37,10 @@ public class PlayGround {
 //        cpb1.show(groupList.groups.size()*3);
 
     }
-    /*
-    private void addGroup(Group group, Item item) {
-        if (!group.items.contains(item)) {
-            return;
-        }
-        if (group.setted.contains(item)) {
-            return;
-        }
-        if (item.base != Base.LAND) {
-            return;
-        }
-        int mxi = -1;
-        int max = 0;
-        for (int i = 0; i < rounds.length; i++) {
-            if (group.playData.ok[rounds[i].time.ordinal()]) {
-                int v = rounds[i].getGround(group.gender, item);
-                if (v > max) {
-                    max = v;
-                    mxi = i;
-                }
-            }
-        }
-        if (mxi == -1) {
-            throw new NotAble();
-        }
-        rounds[mxi].add(group, item);
-        group.rmTime(rounds[mxi].time);
-    }
-    */
 
-    private final static MTime[] all = new MTime[]{
-            MTime.FIRST_UP_1,
-            MTime.FIRST_UP_2,
-            MTime.FIRST_UP_3,
-
-            MTime.FIRST_DOWN_1,
-            MTime.FIRST_DOWN_2,
-            MTime.FIRST_DOWN_3,
-            MTime.FIRST_DOWN_4,
-
-            MTime.SENCOND_UP_1,
-            MTime.SENCOND_UP_2,
-            MTime.SENCOND_UP_3,
-
-            MTime.SENCOND_DOWN_1,
-            MTime.SENCOND_DOWN_2,
-            MTime.SENCOND_DOWN_3,
-            MTime.SENCOND_DOWN_4
-    };
     private final static MTime[] is = new MTime[]{MTime.SENCOND_DOWN_4,MTime.FIRST_DOWN_4, MTime.FIRST_UP_3, MTime.FIRST_UP_3};
     private final static MTime[] end = new MTime[]{MTime.SENCOND_DOWN_4,MTime.FIRST_DOWN_4};
 
-    /*
-    private void appGroup(Group group, MTime[] ls){
-        for(Item item: group.items){
-            if(group.setted.contains(item)){
-                continue;
-            }
-            if(item.base != Base.LAND){
-                continue;
-            }
-            int mxi = -1;
-            int max = 0;
-            for(MTime t : ls){
-                if(group.playData.ok[t.ordinal()]){
-                    int v = rounds[t.ordinal()].getGround(group, item);
-                    if(v > max){
-                        max = v;
-                        mxi = t.ordinal();
-                    }
-                }
-            }
-            if(mxi == -1){
-                return;
-            }
-            rounds[mxi].add(group, item);
-            group.setted.add(item);
-            group.rmTime(rounds[mxi].time);
-        }
-    }*/
 
     private void appGroup(Group group, MTime[] ls){
         if(group.getGroundTime() != null) {
@@ -241,6 +151,9 @@ public class PlayGround {
 
     public GroupList getGroupList() {
         return groupList;
+    }
+
+    public PlayGround mini(PlayGround mini) {
     }
 }
 

@@ -1,137 +1,27 @@
-package qq.com.pojo;
+package qidian.qq.com.logger.utils;
 
-import qq.com.ConsoleProgressBar;
-import qq.com.ExcelReader;
+import qidian.qq.com.logger.model.Group;
+import qidian.qq.com.logger.model.GroupList;
+import qidian.qq.com.logger.model.Person;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import static qq.com.ExcelReader.MINI_GROUP_SIZE;
+public class GroupUtils {
 
-public class Handle {
-    public static Plan calc(ArrayList<Person> people) throws InterruptedException {
-        return makePlan(people, makeGroup(people));
-    }
-
-    private static Plan makePlan(ArrayList<Person> people, GroupList groupList) throws InterruptedException {
-        return new Plan(people, groupList);
-    }
-
-    private static GroupList makeGroup(ArrayList<Person> people) throws InterruptedException {
-        ConsoleProgressBar cpb1 = new ConsoleProgressBar(0, people.size(), 51, "初次组队");
-        LinkedHashMap<String, ArrayList<Person>> cal = new LinkedHashMap<>();
-        int i4 = 0;
-        GroupList groupList = new GroupList();
-        for(Person person:people){
-            cpb1.show(++i4);
-            if(person.append == null){
-                String personKey = person.getItemsKey();
-                cal.compute(personKey, (key, value) -> {
-                    if(value == null){
-                        value = new ArrayList<>();
-                    }
-                    value.add(person);
-                    return value;
-                });
-            }else{
-                groupList.getRest().add(person);
-            }
-        }
-        cal.replaceAll((key, value) -> {
-            Group group = new Group();
-            for(Person person:value){
-                int t = group.add(person);
-                assert t <= 14;
-                if(t == 14){
-                    groupList.add(group);
-                    group = new Group();
-                }
-            }
-            return group.people;
-        });
-        System.out.println("完美分组共"+groupList.groups.size()+"队, 特殊情况考生共"+groupList.getRest().size()+"人全部拿出来不参与筛选，放在未成功分组处");
-
-        ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
-        ConcurrentLinkedQueue<GroupList> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
-        int count = 50;
-        int maxi = ExcelReader.RE_GROUP_COUNT / count;
-        ConsoleProgressBar cpb = new ConsoleProgressBar(0, maxi, 44, "优化落单学生组队");
-        for(int i3 = 0; i3 < maxi; i3++){
-            CountDownLatch latch = new CountDownLatch(count);
-            cpb.show(0);
-            for(int i = 0; i < count; i++){
-                cachedThreadPool.execute(() -> {
-                    LinkedHashMap<String, ArrayList<Person>> c = copy(cal);
-                    GroupList groupList2 = chou(c, new GroupList());
-
-                    GroupList mini = concurrentLinkedQueue.poll();
-                    if (mini == null) {
-                        mini = groupList2;
-                    } else {
-                        if (mini.rest.size() > groupList2.rest.size()) {
-                            mini = groupList2;
-//                    System.out.println("分组共"+mini.groups.size()+"队, 剩余"+mini.rest.size()+"无法分组");
-                        } else if (mini.rest.size() == groupList2.rest.size()
-                                && mini.groups.size() > groupList2.groups.size()) {
-                            mini = groupList2;
-//                    System.out.println("分组共"+mini.groups.size()+"队, 剩余"+mini.rest.size()+"无法分组");
-                        }
-                    }
-                    concurrentLinkedQueue.add(mini);
-                    latch.countDown();
-                });
-            }
-            latch.await();
-            cpb.show(i3);
-        }
-        GroupList mini = null;
-        for(GroupList groupList2 : concurrentLinkedQueue){
-            if(mini == null){
-                mini = groupList2;
-            }else{
-                if(mini.rest.size() > groupList2.rest.size()){
-                    mini = groupList2;
-//                    System.out.println("分组共"+mini.groups.size()+"队, 剩余"+mini.rest.size()+"无法分组");
-                }else if(mini.rest.size() == groupList2.rest.size()
-                        && mini.groups.size() > groupList2.groups.size()){
-                    mini = groupList2;
-//                    System.out.println("分组共"+mini.groups.size()+"队, 剩余"+mini.rest.size()+"无法分组");
-                }
-            }
-        }
-        cpb.show(maxi);
-        assert mini != null;
-        groupList.addAll(mini);
-        System.out.println("分组共"+groupList.groups.size()+"队, 剩余"+groupList.rest.size()+"无分组");
-        return groupList;
-    }
-
-    public static LinkedHashMap<String, ArrayList<Person>> copy(HashMap<String, ArrayList<Person>> cal){
-        LinkedHashMap<String, ArrayList<Person>> res = new LinkedHashMap<>(cal);
-        res.replaceAll((k, v) -> {
-            ArrayList<Person> people = new ArrayList<>(v);
-            return people;
-        });
-        return res;
-    }
-
-    private static GroupList chou(LinkedHashMap<String, ArrayList<Person>> cal,
-                      GroupList groupList){
+    public static GroupList chou(LinkedHashMap<String, ArrayList<Person>> cal,
+                                  GroupList groupList, Setting setting){
         ArrayList<Integer> is = new ArrayList<>();
         for(int i = 0; i < cal.entrySet().size(); i++) {
             is.add(i);
         }
         Collections.shuffle(is);
         int si = 5;
-        final int bound = 14 - MINI_GROUP_SIZE + 1;
+        final int bound = setting.getGroupSize() - setting.getGroupMinSize() + 1;
         do{
             boolean res = false;
             Collections.shuffle(is);
             int g = Math.random() < 0.5 ? 2 : 3;
-            int j = 14 - (int)(Math.random()*bound); // (9, 14]
+            int j = setting.getGroupSize() - (int)(Math.random()*bound); // (9, 14]
             if(g > 2){
                 if(Math.random() > 0.5){
                     for (int i : is) {
@@ -154,8 +44,9 @@ public class Handle {
             }
         }while (si > 0);
 
+        int mid = (setting.getGroupSize()+setting.getGroupMinSize())/2;
         for(int g = 3; g >= 2; g--){
-            for( int j = 14; j > 12; j--){
+            for( int j = setting.getGroupSize(); j > mid; j--){
                 for (int i : is){
                     pare(cal.entrySet(), groupList, i, g, j);
                 }
@@ -163,7 +54,7 @@ public class Handle {
         }
         Collections.shuffle(is);
         for(int g = 3; g >= 2; g--) {
-            for( int j = 14; j > 10; j--) {
+            for( int j = setting.getGroupSize(); j > setting.getGroupMinSize(); j--) {
                 for (int i : is) {
                     tripa(cal.entrySet(), groupList, i, g, j);
                 }
@@ -171,7 +62,7 @@ public class Handle {
         }
         Collections.shuffle(is);
         for(int g = 3; g >= 2; g--){
-            for( int j = 14; j > 7; j--){
+            for( int j = setting.getGroupSize(); j > setting.getGroupMinSize(); j--){
                 for (int i : is){
                     pare(cal.entrySet(), groupList, i, g, j);
                 }
@@ -266,12 +157,18 @@ public class Handle {
         Map.Entry<String, ArrayList<Person>> prei = null;
         Map.Entry<String, ArrayList<Person>> prej = null;
         for(int j : is){
-            if(list.get(j) == mark)continue;
-            if(list.get(j) == null || list.get(j).getValue().size() == 0)continue;
+            if(list.get(j) == mark) {
+                continue;
+            }
+            if(list.get(j) == null || list.get(j).getValue().size() == 0) {
+                continue;
+            }
             Map.Entry<String, ArrayList<Person>> pre = tripb(list,
                     mark, j,gap,
                     mark.getValue().size(), mini);
-            if(pre == null)continue;
+            if(pre == null) {
+                continue;
+            }
             int sum = mark.getValue().size() + list.get(j).getValue().size() + pre.getValue().size();
             assert sum <= 14;
             if(sum>max){
@@ -281,7 +178,6 @@ public class Handle {
             }
         }
         if(prei != null){
-            assert prej != null;
             Group group = new Group();
             int t1 = group.addAll(mark.getValue());
             assert t1 <= 14;
@@ -304,8 +200,12 @@ public class Handle {
         int arr = allready + list.get(j).getValue().size();
         int max = arr;
         for(Map.Entry<String, ArrayList<Person>> t : list){
-            if(t == list.get(j))continue;
-            if(t == null || t.getValue().size() == 0)continue;
+            if(t == list.get(j)) {
+                continue;
+            }
+            if(t == null || t.getValue().size() == 0) {
+                continue;
+            }
             if(list.get(j).getValue().get(0).mache(t.getValue().get(0)) >= gap){
                 int sum = arr + t.getValue().size();
                 if(sum <= 14 && sum >= mini){
@@ -319,9 +219,9 @@ public class Handle {
         return pre;
     }
 
-    private static void trip(Set<Map.Entry<String, ArrayList<Person>>> entries, GroupList groupList, int start_p, int start_j) {
-        int start = start_p + 1;
-        int j = start_j + 1;
+    private static void trip(Set<Map.Entry<String, ArrayList<Person>>> entries, GroupList groupList, int startP, int startJ) {
+        int start = startP + 1;
+        int j = startJ + 1;
         Map.Entry<String, ArrayList<Person>> mark = null;
         Map.Entry<String, ArrayList<Person>> mark2 = null;
         for (Map.Entry<String, ArrayList<Person>> par : entries) {

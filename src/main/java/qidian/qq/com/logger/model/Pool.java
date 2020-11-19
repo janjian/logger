@@ -1,8 +1,4 @@
-package qq.com.pojo;
-
-import qq.com.proj.Gender;
-import qq.com.proj.MTime;
-import qq.com.proj.Tn;
+package qidian.qq.com.logger.model;
 
 import java.util.ArrayList;
 

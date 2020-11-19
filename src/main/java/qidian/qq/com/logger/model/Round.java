@@ -1,34 +1,21 @@
-package qq.com.pojo;
-
-import qq.com.proj.*;
+package qidian.qq.com.logger.model;
 
 import java.util.*;
 
 public class Round {
     public HashMap[] grounds = new HashMap[2];
-    public final MTime time;
+    public final int time;
 
-    public Round(MTime time) {
+    public Round(int time) {
         HashMap<Item, ArrayList<Group>> groundb = new HashMap<>();
         HashMap<Item, ArrayList<Group>> groundg = new HashMap<>();
-        for(Item item : Item.values()){
-            if(item.base == Base.WATERS){
-                continue;
-            }
-            if(item.gender == Gender.BOTH || item.gender == Gender.男){
-                groundb.put(item, new ArrayList<>());
-            }
-            if(item.gender == Gender.BOTH || item.gender == Gender.女){
-                groundg.put(item, new ArrayList<>());
-            }
-        }
         grounds[0] = groundb;
         grounds[1] = groundg;
         this.time = time;
     }
 
     public ArrayList<Group> getList(Gender gender, Item item){
-        return (ArrayList<Group>) grounds[gender.ordinal()].get(item);
+        return (ArrayList<Group>) grounds[gender.ordinal()].computeIfAbsent(item, k -> new ArrayList<Group>());
     }
 
     public int getGroupCount(Gender gender){

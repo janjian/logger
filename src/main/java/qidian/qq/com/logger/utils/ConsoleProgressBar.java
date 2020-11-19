@@ -1,4 +1,4 @@
-package qq.com;
+package qidian.qq.com.logger.utils;
 
 import java.text.DecimalFormat;
 
