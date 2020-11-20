@@ -5,13 +5,17 @@ import java.util.*;
 public class Round {
     public HashMap[] grounds = new HashMap[2];
     public final int time;
+    final int index;
+    final String part;
 
-    public Round(int time) {
+    public Round(int time, int index, String part) {
         HashMap<Item, ArrayList<Group>> groundb = new HashMap<>();
         HashMap<Item, ArrayList<Group>> groundg = new HashMap<>();
         grounds[0] = groundb;
         grounds[1] = groundg;
         this.time = time;
+        this.index = index;
+        this.part = part;
     }
 
     public ArrayList<Group> getList(Gender gender, Item item){
@@ -54,16 +58,6 @@ public class Round {
         }
         return res;
     }
-    public boolean add(int index, Group group) {
-        boolean res = true;
-        for(Item item : group.items){
-            if(item.base != Base.LAND){
-                continue;
-            }
-            getList(group.gender, item).add(index, group);
-        }
-        return res;
-    }
 
     public int mark() {
         int dev = 0;
@@ -75,5 +69,9 @@ public class Round {
             }
         }
         return dev;
+    }
+
+    public int test(Group group) {
+        return getGround(group) + getGroupCount(group.gender);
     }
 }

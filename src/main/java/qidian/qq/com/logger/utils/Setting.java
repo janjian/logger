@@ -18,6 +18,7 @@ public class Setting {
     private int landDays;
     private int upBatchSize;
     private int downBatchSize;
+    private int onBatchSize;
 
     public static Setting getSetting(){
         JTextField groupSize = new JTextField(new NumberTextField(),"14",10);
@@ -36,6 +37,9 @@ public class Setting {
         JTextField downBatchSize = new JTextField(new NumberTextField(),"3",10);
         myPanel.add(new JLabel("下午批次数量:"));
         myPanel.add(downBatchSize);
+        JTextField onBatchSize = new JTextField(new NumberTextField(),"14",10);
+        myPanel.add(new JLabel("单批次单性别最大分组数量:"));
+        myPanel.add(onBatchSize);
         myPanel.add(Box.createHorizontalStrut(15)); // a spacer
         JTextField reGroupTimes = new JTextField(new NumberTextField(),"30000",10);
         myPanel.add(new JLabel("尝试分组次数:"));
@@ -56,7 +60,8 @@ public class Setting {
                     Integer.parseInt(rePlanTimes.getText()),
                     Integer.parseInt(landDays.getText()),
                     Integer.parseInt(upBatchSize.getText()),
-                    Integer.parseInt(downBatchSize.getText())
+                    Integer.parseInt(downBatchSize.getText()),
+                    Integer.parseInt(onBatchSize.getText())
             );
         }
         return null;

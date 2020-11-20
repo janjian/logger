@@ -12,7 +12,7 @@ import java.util.Iterator;
 
 @Getter
 public class Person {
-    static ArrayList<String> headers;
+    public static ArrayList<String> headers;
     private final HashMap<String, String> data = new HashMap<>();
     public static void setHeader(Row row) {
         headers = new ArrayList<>();

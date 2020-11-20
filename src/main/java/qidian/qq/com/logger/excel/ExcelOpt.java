@@ -1,18 +1,19 @@
 package qidian.qq.com.logger.excel;
 
 import com.sun.tools.javac.util.Pair;
+import lombok.val;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import qidian.qq.com.logger.model.*;
 import qidian.qq.com.logger.utils.ConsoleProgressBar;
 import qidian.qq.com.logger.utils.GroupUtils;
 import qidian.qq.com.logger.utils.Setting;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -58,15 +59,68 @@ public class ExcelOpt {
         System.out.println("处理了"+people.size()+"条数据");
         Setting setting = Setting.getSetting();
         System.out.println(setting);
+        if(setting == null){
+            return;
+        }
         GroupList groupList = getGroupLists(new ArrayList<>(people), setting);
-        Plan plan = getPlan(people, groupList, setting);
+        Plan plan = getPlan(new ArrayList<>(people), groupList, setting);
         excelOpt.write(plan);
     }
 
-    private void write(Plan plan) {
+    private void write(Plan plan) throws IOException {
+        int split = excelPath.lastIndexOf(".");
+        int i = 0;
+        File file;
+        String name;
+        System.out.println("准备输出结果");
+        do {
+            name = excelPath.substring(0, split) + ".输出." + (i++) + excelPath.substring(split);
+            file = new File(name);
+            if(file.exists())continue;
+        }while (!file.createNewFile());
+        // 创建工作文档对象
+        OutputStream out = new FileOutputStream(name);
+        System.out.println("准备生成结果文件:"+name);
+        Workbook workbook = insert(plan);
+        System.out.println("准备写入文件");
+        workbook.write(out);
+        System.out.println("写入文件完成");
     }
 
-    private static Plan getPlan(ArrayList<Person> people, GroupList groupList, Setting setting) {
+    private Workbook insert(Plan plan) {
+        Workbook workbook = null;
+        if(isXLSX){
+            workbook = new XSSFWorkbook();
+        }else {
+            workbook = new HSSFWorkbook();
+        }
+        outPeople(workbook, plan);
+        outGorup(workbook, plan);
+        return workbook;
+    }
+
+    private void outPeople(Workbook workbook, Plan plan) {
+        Sheet sheet = workbook.createSheet("学生列表");
+        Row hint = sheet.createRow(0);
+        Iterator<Cell> cellOld = this.sheet.getRow(0).cellIterator();
+        for (int i = 0; cellOld.hasNext(); i++) {
+            Cell cell = cellOld.next();
+            Cell newCell = hint.createCell(i, cell.getCellTypeEnum());
+            newCell.setCellValue(cell.getStringCellValue());
+        }
+
+        int rowIndex = 1;
+        Row row = sheet.createRow(rowIndex++);
+        int cellIndex = 0;
+        for (String name : Person.headers) {
+            Cell cell = hint.createCell(cellIndex++);
+            cell.setCellValue(name);
+        }
+
+
+    }
+
+    private static Plan getPlan(ArrayList<Person> people, GroupList groupList, Setting setting) throws InterruptedException {
         PlayPool playPool = new PlayPool(people, groupList);
         int count = 50;
         int maxi = setting.getReGroupTimes() / count;
@@ -78,10 +132,13 @@ public class ExcelOpt {
             for(int i = 0; i < count; i++){
                 cachedThreadPool.execute(() -> {
                     GroupList inner = groupList.clone();
-                    PlayGround p = new PlayGround(inner);
+                    try {
+                        PlayGround p = new PlayGround(inner, setting);
 
-                    PlayGround mini = concurrentLinkedQueue.poll();
-                    concurrentLinkedQueue.add(p.mini(mini));
+                        PlayGround mini = concurrentLinkedQueue.poll();
+                        concurrentLinkedQueue.add(p.max(mini));
+                    }catch (NotAble notAble){
+                    }
                     latch.countDown();
                 });
             }
@@ -93,14 +150,17 @@ public class ExcelOpt {
             if(mini == null){
                 mini = groupList2;
             }else{
-                mini = mini.mini(groupList2);
+                mini = mini.max(groupList2);
             }
         }
         cpb.show(maxi);
+        if(mini == null){
+            throw new NotAble("可能是由于单批次允许组数过少，无法继续分配。");
+        }
         return new Plan(playPool, mini);
     }
 
-    private static GroupList getGroupLists(ArrayList<Person> people, Setting setting) {
+    private static GroupList getGroupLists(ArrayList<Person> people, Setting setting) throws InterruptedException {
         Pair<GroupList, LinkedHashMap<String, ArrayList<Person>>> pair = GroupList.init(people, setting);
         GroupList groupList = pair.fst;
         System.out.println("完美分组共"+groupList.getGroups().size()+"队, 特殊情况考生共"+groupList.getRest().size()+"人全部拿出来不参与筛选，放在未成功分组处");
@@ -180,7 +240,9 @@ public class ExcelOpt {
             String filePath = new File("").getAbsolutePath();
             File path = new File(filePath);
             for(File file : Objects.requireNonNull(path.listFiles())){
-                if(file.getName().indexOf(".输出.") > 0)continue;
+                if(file.getName().indexOf(".输出.") > 0) {
+                    continue;
+                }
                 try {
                     excelOpt = new ExcelOpt(file.getAbsolutePath());
                     System.out.println("读取到第一个excel《"+file.getName()+"》开始处理");
