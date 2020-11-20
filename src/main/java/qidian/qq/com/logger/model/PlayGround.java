@@ -1,7 +1,7 @@
 package qidian.qq.com.logger.model;
 
 
-import com.sun.tools.javac.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import qidian.qq.com.logger.excel.NotAble;
 import qidian.qq.com.logger.utils.Setting;
 
@@ -73,7 +73,7 @@ public class PlayGround {
             throw new NotAble("可能是由于单批次允许组数过少，无法继续分配。");
         }
 
-        ground.get(miniIndex.fst).get(miniIndex.snd).add(group);
+        ground.get(miniIndex.getLeft()).get(miniIndex.getRight()).add(group);
     }
 
     private double test(int i, int j, Group group) {

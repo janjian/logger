@@ -1,7 +1,7 @@
 package qidian.qq.com.logger.model;
 
-import com.sun.tools.javac.util.Pair;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +22,7 @@ public class Plan {
                     Group group = round.bgroups.get(j);
                     for (int l = 0; l < group.people.size(); l++) {
                         String noNum4 = noNum3 + String.format("%02d", l+1);
-                        Pair<String, String> num = new Pair<>(noNum4,group.playData.waterTime());
+                        Pair<String, String> num = Pair.of(noNum4,group.playData.waterTime());
                         Person person = group.people.get(l);
                         res.put(person.get(personKey), num);
                     }
@@ -32,7 +32,7 @@ public class Plan {
                     Group group = round.ggroups.get(j);
                     for (int l = 0; l < group.people.size(); l++) {
                         String noNum4 = noNum3 + String.format("%02d", l+1);
-                        Pair<String, String> num = new Pair<>(noNum4,group.playData.waterTime());
+                        Pair<String, String> num = Pair.of(noNum4,group.playData.waterTime());
                         Person person = group.people.get(l);
                         res.put(person.get(personKey), num);
                     }

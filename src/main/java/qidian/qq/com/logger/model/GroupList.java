@@ -1,7 +1,7 @@
 package qidian.qq.com.logger.model;
 
-import com.sun.tools.javac.util.Pair;
 import lombok.Getter;
+import org.apache.commons.lang3.tuple.Pair;
 import qidian.qq.com.logger.utils.ConsoleProgressBar;
 import qidian.qq.com.logger.utils.Setting;
 

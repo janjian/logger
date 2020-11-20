@@ -1,11 +1,10 @@
 package qidian.qq.com.logger.excel;
 
-import com.sun.tools.javac.util.Pair;
 import lombok.val;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.STCellType;
 import org.springframework.util.StringUtils;
 import qidian.qq.com.logger.model.*;
 import qidian.qq.com.logger.utils.ConsoleProgressBar;
@@ -13,7 +12,9 @@ import qidian.qq.com.logger.utils.GroupUtils;
 import qidian.qq.com.logger.utils.Setting;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -135,9 +136,9 @@ public class ExcelOpt {
                 continue;
             }
             cell = row.createCell(land);
-            cell.setCellValue(stringStringPair.fst);
+            cell.setCellValue(stringStringPair.getLeft());
             cell = row.createCell(water);
-            cell.setCellValue(stringStringPair.snd);
+            cell.setCellValue(stringStringPair.getRight());
         }
     }
 
@@ -183,7 +184,7 @@ public class ExcelOpt {
 
     private static GroupList getGroupLists(ArrayList<Person> people, Setting setting) throws InterruptedException {
         Pair<GroupList, LinkedHashMap<String, ArrayList<Person>>> pair = GroupList.init(people, setting);
-        GroupList groupList = pair.fst;
+        GroupList groupList = pair.getLeft();
         System.out.println("完美分组共"+groupList.getGroups().size()+"队, 特殊情况考生共"+groupList.getRest().size()+"人全部拿出来不参与筛选，放在未成功分组处");
 
         ConcurrentLinkedQueue<GroupList> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
@@ -195,7 +196,7 @@ public class ExcelOpt {
             cpb.show(0);
             for(int i = 0; i < count; i++){
                 cachedThreadPool.execute(() -> {
-                    LinkedHashMap<String, ArrayList<Person>> c = GroupList.copy(pair.snd);
+                    LinkedHashMap<String, ArrayList<Person>> c = GroupList.copy(pair.getRight());
                     GroupList groupList2 = GroupUtils.chou(c, new GroupList(), setting);
 
                     GroupList mini = concurrentLinkedQueue.poll();
