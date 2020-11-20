@@ -9,23 +9,20 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 @Getter
 public class Person {
-    public static ArrayList<String> headers;
-    private final HashMap<String, String> data = new HashMap<>();
+    public static Row headers;
+    private final HashMap<String, String> data = new LinkedHashMap<>();
     public static void setHeader(Row row) {
-        headers = new ArrayList<>();
-        int i = row.getFirstCellNum();
-        Iterator<Cell> cells =  row.cellIterator();
-        cells.forEachRemaining(cell -> headers.add(StringUtils.trimAllWhitespace(cell.getStringCellValue())));
+        headers = row;
     }
     public static Person parsePerson(Row row) {
-        int i = 0;
         Person person = new Person();
-        for (Iterator<Cell> it = row.cellIterator(); it.hasNext(); i++) {
+        for (Iterator<Cell> it = row.cellIterator(); it.hasNext();) {
             Cell cell = it.next();
-            String key = headers.get(i);
+            String key = StringUtils.trimAllWhitespace(headers.getCell(cell.getColumnIndex()).getStringCellValue());
             String nostr = cell.getCellTypeEnum() == CellType.NUMERIC
                     ? ((long) cell.getNumericCellValue()) + ""
                     : cell.getStringCellValue();
@@ -51,7 +48,7 @@ public class Person {
 
     private static final String appendKey = "备注";
     public boolean isAppend() {
-        return StringUtils.isEmpty(data.get(appendKey));
+        return !StringUtils.isEmpty(data.get(appendKey));
     }
 
     Gender gender;

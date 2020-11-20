@@ -1,11 +1,11 @@
 package qidian.qq.com.logger.utils;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.ToString;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
 @Getter
 @AllArgsConstructor
@@ -24,28 +24,30 @@ public class Setting {
         JTextField groupSize = new JTextField(new NumberTextField(),"14",10);
         JTextField groupMinSize = new JTextField(new NumberTextField(),"10",10);
         JPanel myPanel = new JPanel();
-        myPanel.add(new JLabel("每组最少人数:"));
+        myPanel.setLayout(new GridLayout(3,3));
+        myPanel.setBorder(new EmptyBorder(15, 5, 5, 5));
+        myPanel.add(new JLabel("每组最少人数:", SwingConstants.RIGHT));
         myPanel.add(groupMinSize);
-        myPanel.add(new JLabel("每组最多人数:"));
+        myPanel.add(new JLabel("每组最多人数:", SwingConstants.RIGHT));
         myPanel.add(groupSize);
         JTextField landDays = new JTextField(new NumberTextField(),"2",10);
-        myPanel.add(new JLabel("路上项目天数:"));
+        myPanel.add(new JLabel("路上项目天数:", SwingConstants.RIGHT));
         myPanel.add(landDays);
         JTextField upBatchSize = new JTextField(new NumberTextField(),"4",10);
-        myPanel.add(new JLabel("上午批次数量:"));
+        myPanel.add(new JLabel("上午批次数量:", SwingConstants.RIGHT));
         myPanel.add(upBatchSize);
         JTextField downBatchSize = new JTextField(new NumberTextField(),"3",10);
-        myPanel.add(new JLabel("下午批次数量:"));
+        myPanel.add(new JLabel("下午批次数量:", SwingConstants.RIGHT));
         myPanel.add(downBatchSize);
         JTextField onBatchSize = new JTextField(new NumberTextField(),"14",10);
-        myPanel.add(new JLabel("单批次单性别最大分组数量:"));
+        myPanel.add(new JLabel("单批次单性别最大分组数量:", SwingConstants.RIGHT));
         myPanel.add(onBatchSize);
         myPanel.add(Box.createHorizontalStrut(15)); // a spacer
         JTextField reGroupTimes = new JTextField(new NumberTextField(),"30000",10);
-        myPanel.add(new JLabel("尝试分组次数:"));
+        myPanel.add(new JLabel("尝试分组次数:", SwingConstants.RIGHT));
         myPanel.add(reGroupTimes);
         JTextField rePlanTimes = new JTextField(new NumberTextField(),"10000",10);
-        myPanel.add(new JLabel("尝试编排次数:"));
+        myPanel.add(new JLabel("尝试编排次数:", SwingConstants.RIGHT));
         myPanel.add(rePlanTimes);
 
         int result = JOptionPane.showConfirmDialog(null, myPanel,
@@ -80,8 +82,15 @@ public class Setting {
 
     @Override
     public String toString() {
-        return "输入的配置{" +
+        return "Setting{" +
                 "分组大小=" + groupSize +
+                ", 分组最小大小=" + groupMinSize +
+                ", 重新分组次数=" + reGroupTimes +
+                ", 重新分批次数=" + rePlanTimes +
+                ", 路上项目天数=" + landDays +
+                ", 上午批次数=" + upBatchSize +
+                ", 下午批次数=" + downBatchSize +
+                ", 单批次内组数（男、女各）=" + onBatchSize +
                 '}';
     }
 }

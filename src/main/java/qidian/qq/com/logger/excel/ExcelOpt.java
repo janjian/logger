@@ -3,11 +3,10 @@ package qidian.qq.com.logger.excel;
 import com.sun.tools.javac.util.Pair;
 import lombok.val;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.STCellType;
+import org.springframework.util.StringUtils;
 import qidian.qq.com.logger.model.*;
 import qidian.qq.com.logger.utils.ConsoleProgressBar;
 import qidian.qq.com.logger.utils.GroupUtils;
@@ -23,6 +22,7 @@ import java.util.concurrent.Executors;
 public class ExcelOpt {
 
     private Sheet sheet;
+    private Workbook workbook;
     private boolean isXLSX = false;
     private String excelPath;
 
@@ -47,8 +47,10 @@ public class ExcelOpt {
         }
         /*这里默认只读取第 1 个sheet*/
         if (hssfWorkbook != null) {
+            this.workbook = hssfWorkbook;
             this.sheet = hssfWorkbook.getSheetAt(0);
         } else if (xssfWorkbook != null) {
+            this.workbook = xssfWorkbook;
             this.sheet = xssfWorkbook.getSheetAt(0);
         }
     }
@@ -88,41 +90,60 @@ public class ExcelOpt {
     }
 
     private Workbook insert(Plan plan) {
-        Workbook workbook = null;
-        if(isXLSX){
-            workbook = new XSSFWorkbook();
-        }else {
-            workbook = new HSSFWorkbook();
-        }
+        Workbook workbook = this.workbook;
         outPeople(workbook, plan);
-        outGorup(workbook, plan);
+//        outGorup(workbook, plan);
         return workbook;
     }
 
     private void outPeople(Workbook workbook, Plan plan) {
-        Sheet sheet = workbook.createSheet("学生列表");
-        Row hint = sheet.createRow(0);
-        Iterator<Cell> cellOld = this.sheet.getRow(0).cellIterator();
-        for (int i = 0; cellOld.hasNext(); i++) {
-            Cell cell = cellOld.next();
-            Cell newCell = hint.createCell(i, cell.getCellTypeEnum());
-            newCell.setCellValue(cell.getStringCellValue());
+        Sheet sheet = workbook.getSheetAt(0);
+        Row row = sheet.getRow(1);
+        val cellIterator = row.cellIterator();
+        int cellI = -1;
+        while (cellIterator.hasNext()) {
+            Cell cell = cellIterator.next();
+            if(cell.getCellTypeEnum().equals(CellType.STRING)
+                    && "报名号".equals(StringUtils.trimAllWhitespace(cell.getStringCellValue()))){
+                cellI = cell.getColumnIndex();
+                break;
+            }
         }
-
-        int rowIndex = 1;
-        Row row = sheet.createRow(rowIndex++);
-        int cellIndex = 0;
-        for (String name : Person.headers) {
-            Cell cell = hint.createCell(cellIndex++);
-            cell.setCellValue(name);
+        if(cellI <0){
+            System.out.println("第2行 找不到【报名号】");
+            throw new RuntimeException("找不到【报名号】");
         }
+        int land = row.getLastCellNum()+1;
+        Cell cell = row.createCell(land);
+        cell.setCellValue("路上准考证号");
+        int water = land+1;
+        cell = row.createCell(water);
+        cell.setCellValue("水上项目批次");
 
+        val peopleMap = plan.prasePeopleWater("报名号");
 
+        int last = sheet.getLastRowNum();
+        for (int i = 2; i <= last; i++) {
+            row = sheet.getRow(i);
+            cell = row.getCell(cellI);
+            String nostr = cell.getCellTypeEnum() == CellType.NUMERIC
+                    ? ((long) cell.getNumericCellValue()) + ""
+                    : cell.getStringCellValue();
+            cell = row.createCell(land);
+            val stringStringPair = peopleMap.get(nostr);
+            if(stringStringPair== null){
+                continue;
+            }
+            cell = row.createCell(land);
+            cell.setCellValue(stringStringPair.fst);
+            cell = row.createCell(water);
+            cell.setCellValue(stringStringPair.snd);
+        }
     }
 
     private static Plan getPlan(ArrayList<Person> people, GroupList groupList, Setting setting) throws InterruptedException {
         PlayPool playPool = new PlayPool(people, groupList);
-        int count = 50;
+        int count = Math.min(setting.getReGroupTimes(), 50);
         int maxi = setting.getReGroupTimes() / count;
         ConcurrentLinkedQueue<PlayGround> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
         ConsoleProgressBar cpb = new ConsoleProgressBar(0, maxi, 44, "优化陆地项目批次");
@@ -166,7 +187,7 @@ public class ExcelOpt {
         System.out.println("完美分组共"+groupList.getGroups().size()+"队, 特殊情况考生共"+groupList.getRest().size()+"人全部拿出来不参与筛选，放在未成功分组处");
 
         ConcurrentLinkedQueue<GroupList> concurrentLinkedQueue = new ConcurrentLinkedQueue<>();
-        int count = 50;
+        int count = Math.min(setting.getReGroupTimes(), 50);
         int maxi = setting.getReGroupTimes() / count;
         ConsoleProgressBar cpb = new ConsoleProgressBar(0, maxi, 44, "优化落单学生组队");
         for(int i3 = 0; i3 < maxi; i3++){
@@ -204,7 +225,7 @@ public class ExcelOpt {
         ArrayList<Person> res = new ArrayList<Person>();
         ConsoleProgressBar cpb = new ConsoleProgressBar(0, getAllRowNumber(), 49, "读取输入文件");
         Person.setHeader(sheet.getRow(1));
-        for (int i = 2; i < getAllRowNumber(); i++) {
+        for (int i = 2; i <= getAllRowNumber(); i++) {
             Row row = sheet.getRow(i);
             if (row.getLastCellNum() - row.getFirstCellNum() < 7) {
                 System.out.println();

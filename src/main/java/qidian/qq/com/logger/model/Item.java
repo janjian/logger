@@ -8,7 +8,7 @@ import java.util.Set;
  */
 public class Item {
 
-    static HashMap<String, Item> items;
+    static HashMap<String, Item> items = new HashMap<>();
 
     public int num;
     /**

@@ -21,6 +21,7 @@ public class Group {
         group.items.addAll(items);
         group.gender = gender;
         group.base = base;
+        group.playData = playData.clone();
         return group;
     }
 

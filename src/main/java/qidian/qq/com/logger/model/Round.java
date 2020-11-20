@@ -4,6 +4,8 @@ import java.util.*;
 
 public class Round {
     public HashMap[] grounds = new HashMap[2];
+    public ArrayList<Group> bgroups = new ArrayList<>();
+    public ArrayList<Group> ggroups = new ArrayList<>();
     public final int time;
     final int index;
     final String part;
@@ -53,6 +55,11 @@ public class Round {
         for(Item item : group.items){
             if(item.base != Base.LAND){
                 continue;
+            }
+            if(group.gender == Gender.男){
+                bgroups.add(group);
+            }else {
+                ggroups.add(group);
             }
             res &= getList(group.gender, item).add(group);
         }
